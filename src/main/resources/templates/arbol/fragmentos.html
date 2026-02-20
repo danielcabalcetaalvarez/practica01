@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>Practica01</title>
+        <meta charset="UTF-8"/>
+        <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+        <link th:href="@{/webjars/font-awesome/css/all.css}" rel="stylesheet"/>
+        <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    </head>
+
+    <body>
+        <section class="container mt-4">
+
+            <!-- ================= AGREGAR ================= -->
+            <section th:fragment="agregar">
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#agregarArbolModal">
+                            <i class="fa-solid fa-plus"></i> Agregar árbol
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="agregarArbolModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">
+                                    <i class="fa-solid fa-tree"></i> Agregar árbol
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+
+                            <form th:action="@{/arbol/guardar}"
+                                  th:object="${arbol}"
+                                  method="post"
+                                  enctype="multipart/form-data"
+                                  class="was-validated">
+
+                                <div class="modal-body">
+
+                                    <div class="mb-3">
+                                        <label>Nombre</label>
+                                        <input type="text" class="form-control"
+                                               th:field="*{nombre}" maxlength="50" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Tipo de flor</label>
+                                        <input type="text" class="form-control"
+                                               th:field="*{tipoFlor}" maxlength="50" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Dureza de madera</label>
+                                        <input type="text" class="form-control"
+                                               th:field="*{durezaMadera}" maxlength="50" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Color</label>
+                                        <input type="text" class="form-control"
+                                               th:field="*{color}" maxlength="50" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Edad (años)</label>
+                                        <input type="number" class="form-control"
+                                               th:field="*{edadAnios}" min="0" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Imagen</label>
+                                        <input type="file" class="form-control"
+                                               name="imagenFile" accept="image/*">
+                                    </div>
+
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Cerrar
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        Guardar
+                                    </button>
+                                </div>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ================= LISTADO ================= -->
+            <section th:fragment="listado">
+
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Listado de árboles</h4>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div th:if="${arboles != null and !arboles.empty}">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>Tipo flor</th>
+                                        <th>Dureza</th>
+                                        <th>Color</th>
+                                        <th>Edad</th>
+                                        <th>Imagen</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="a : ${arboles}">
+                                        <td th:text="${a.idArbol}"></td>
+                                        <td th:text="${a.nombre}"></td>
+                                        <td th:text="${a.tipoFlor}"></td>
+                                        <td th:text="${a.durezaMadera}"></td>
+                                        <td th:text="${a.color}"></td>
+                                        <td th:text="${a.edadAnios}"></td>
+
+                                        <td>
+                                            <img th:if="${a.rutaImagen != null}"
+                                                 th:src="@{${a.rutaImagen}}"
+                                                 height="60"/>
+                                        </td>
+
+                                        <td>
+                                            <a th:href="@{/arbol/modificar/}+${a.idArbol}"
+                                               class="btn btn-warning btn-sm">
+                                                Editar
+                                            </a>
+
+                                            <form th:action="@{/arbol/eliminar}" method="post"
+                                                  style="display:inline;">
+                                                <input type="hidden" name="idArbol"
+                                                       th:value="${a.idArbol}"/>
+                                                <button type="submit"
+                                                        class="btn btn-danger btn-sm">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </td>
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div th:if="${arboles == null or arboles.empty}">
+                            <p>Lista vacía</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <strong>Total:</strong>
+                    <span th:text="${totalArboles}"></span>
+                </div>
+
+            </section>
+
+
+            <!-- ================= EDITAR ================= -->
+            <section th:fragment="editar">
+
+                <form th:action="@{/arbol/guardar}"
+                      th:object="${arbol}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      class="was-validated">
+
+                    <input type="hidden" th:field="*{idArbol}"/>
+                    <input type="hidden" th:field="*{rutaImagen}"/>
+
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <input type="text" class="form-control"
+                               th:field="*{nombre}" maxlength="50" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Tipo de flor</label>
+                        <input type="text" class="form-control"
+                               th:field="*{tipoFlor}" maxlength="50" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Dureza de madera</label>
+                        <input type="text" class="form-control"
+                               th:field="*{durezaMadera}" maxlength="50" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Color</label>
+                        <input type="text" class="form-control"
+                               th:field="*{color}" maxlength="50" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Edad (años)</label>
+                        <input type="number" class="form-control"
+                               th:field="*{edadAnios}" min="0" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Imagen</label>
+                        <input type="file" class="form-control"
+                               name="imagenFile" accept="image/*">
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        Guardar
+                    </button>
+
+                    <a th:href="@{/arbol/listado}" class="btn btn-secondary">
+                        Regresar
+                    </a>
+
+                </form>
+
+            </section>
+
+        </section>
+    </body>
+</html>
